@@ -41,4 +41,4 @@ const handleResponse = (req, res) => {
     res.end();
 }
 
-module.exports = handleResponse;
+exports.handler = handleResponse;
