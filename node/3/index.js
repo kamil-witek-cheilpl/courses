@@ -1,18 +1,18 @@
 const http = require('http');
+const fs = require('fs');
 
 const server = http.createServer((req, res) => {
     const {url, method} = req
-    res.writeHead(200, {"Content-Type":"text/html"})
 
-    if (url === '/') {
-        res.write(`
+    if (url === '/' && method === "GET") {
+        res.writeHead(200, {"Content-Type":"text/html"})
+        res.end(`
         <form action="/create-user" method="post">
             <input type="text" name="userName" placeholder="user"/>
             <input type="submit" value="submit"/>
         </form>`)
-        res.end();
-    }else if (url === '/users') {
-        res.write(`
+    }else if (url === '/users' && method === "GET") {
+        res.end(`
         <div>
             <h1>hello from the user page</h1>
             <ul>
@@ -21,16 +21,41 @@ const server = http.createServer((req, res) => {
                 <li>User 3</li>
             </ul>
         </div>`)
-        res.end();
+
     }else if (url === "/create-user" && method === "POST") {
         const data = [];
         let userName = '';
+        let users = [];
         req.on("data",chunk => data.push(chunk))
         req.on("end", () => {
             userName = Buffer.concat(data).toString().split("=")[1];
-            console.log(userName)
-            url.length = 0;
-        })       
+            // fs.writeFileSync('./node/3/users.json', JSON.stringify({users: [...users]}))
+            // console.log(prevFile)
+            // const test = Buffer.concat(prevFile).toString();
+            // console.log(test)
+        })
+        fs.readFile('./node/3/users.json', { encoding: 'utf-8' }, (err, prevData) => {
+            if (err) {
+                console.log('error reading users.json', err)
+            } else {
+                const prevUsers = JSON.parse(prevData).users || [];
+                if (userName !== ''){
+                    users = prevUsers.concat(userName)
+                    fs.writeFile('./node/3/users.json',JSON.stringify({users:['afwa']}), {encoding: 'utf-8'},
+                    (err) => {
+    if (err) throw err;
+    console.log('File written successfully');
+  }
+                )
+                }
+            }
+        })
+        console.log(users, 'users');
+
+        res.writeHead(302, {
+            Location: "/users"
+        })
+        res.end();
     } else {
         res.write(`<p>somewhere else</p>`)
         res.end();        
